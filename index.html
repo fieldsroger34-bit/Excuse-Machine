@@ -1,45 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#080810" />
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excuse Machine™ — AI-Powered Excuses for Every Situation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:#080810;color:#e8e8f0;min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;font-family:'Syne',sans-serif}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{opacity:.4}50%{opacity:.7}}
+@keyframes particleFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0d0d1a}::-webkit-scrollbar-thumb{background:#2a2a4a;border-radius:3px}
+@media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)!important}.pkg-grid{grid-template-columns:1fr!important}}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px}
+.bg-glow1{position:fixed;top:-20%;left:-10%;width:60%;height:60%;background:radial-gradient(circle,rgba(120,80,255,.15) 0%,transparent 70%);z-index:0;pointer-events:none;animation:glow 6s ease-in-out infinite}
+.bg-glow2{position:fixed;bottom:-20%;right:-10%;width:50%;height:50%;background:radial-gradient(circle,rgba(255,80,120,.1) 0%,transparent 70%);z-index:0;pointer-events:none;animation:glow 8s ease-in-out infinite 2s}
+.particle{position:fixed;z-index:1000;font-size:24px;pointer-events:none;animation:particleFly 1.2s ease-out forwards}
+.container{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:24px 20px 80px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{font-size:36px}
+.logo-title{font-weight:800;font-size:22px;letter-spacing:-.5px;background:linear-gradient(135deg,#fff 0%,#a78bfa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:12px;color:#666680;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:12px}
+.credit-badge{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700}
+.hist-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#b0b0c8;padding:7px 14px;border-radius:8px;font-size:13px;transition:all .2s}
+.history-panel{background:#0f0f1e;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:28px;max-height:300px;overflow-y:auto;animation:fadeUp .2s ease}
+.history-header{display:flex;justify-content:space-between;font-weight:700;margin-bottom:12px;color:#a78bfa}
+.close-btn{background:none;border:none;color:#666;font-size:16px}
+.hist-empty{color:#555;font-size:14px;text-align:center;padding:20px 0}
+.hist-item{border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:10px;margin-bottom:10px}
+.hist-meta{font-size:11px;color:#555;margin-bottom:4px;font-family:'DM Mono',monospace}
+.hist-text{font-size:13px;color:#c0c0d8;line-height:1.5}
+.stat-row{display:flex;gap:10px;margin-bottom:28px}
+.stat{flex:1;text-align:center;font-size:12px;color:#505070;background:rgba(255,255,255,.03);border-radius:8px;padding:10px;border:1px solid rgba(255,255,255,.05)}
+.section{margin-bottom:28px}
+.section-title{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7070a0;margin-bottom:12px}
+.optional{font-weight:400;opacity:.6;text-transform:none;letter-spacing:0}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 8px;color:#b0b0c8;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .18s;position:relative}
+.cat-btn.active{background:rgba(124,58,237,.2);border:1px solid #7c3aed;color:#e0d0ff}
+.cat-btn.locked{opacity:.6}
+.cat-emoji{font-size:22px}.cat-label{font-size:12px;font-weight:600}
+.lock-badge{position:absolute;top:5px;right:6px;font-size:10px;background:rgba(124,58,237,.5);border-radius:4px;padding:1px 4px}
+.free-note{font-size:12px;color:#555;margin-top:10px}
+.urgency-row{display:flex;gap:10px}
+.urg-btn{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;color:#b0b0c8;display:flex;flex-direction:column;gap:4px;transition:all .18s;text-align:left}
+.urg-btn.active{background:rgba(239,68,68,.15);border:1px solid #ef4444;color:#fca5a5}
+.urg-label{font-weight:700;font-size:14px}.urg-desc{font-size:11px;opacity:.6}
+textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;color:#e0e0f0;font-family:'DM Mono',monospace;font-size:13px;padding:12px;resize:none;outline:none;line-height:1.5;transition:border-color .2s}
+textarea:focus{border-color:rgba(124,58,237,.5)}
+.gen-section{text-align:center;margin-bottom:28px}
+.free-counter{font-size:13px;color:#a78bfa;margin-bottom:12px;font-weight:600}
+.gen-btn{width:100%;padding:18px;background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);border:none;border-radius:12px;color:#fff;font-size:17px;font-weight:800;letter-spacing:.02em;transition:all .2s;box-shadow:0 8px 32px rgba(124,58,237,.35)}
+.gen-btn:hover{transform:translateY(-1px)}
+.gen-btn.loading{opacity:.7;cursor:wait}
+.gen-btn.locked{background:linear-gradient(135deg,#2a2a4a 0%,#1a1a2e 100%);box-shadow:none}
+.gen-btn-inner{display:flex;align-items:center;justify-content:center;gap:10px}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.result-section{margin-bottom:28px;animation:fadeUp .3s ease}
+.result-card{background:linear-gradient(135deg,rgba(124,58,237,.12) 0%,rgba(79,70,229,.08) 100%);border:1px solid rgba(124,58,237,.3);border-radius:14px;padding:24px}
+.result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.result-label{font-size:12px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.premium-tag{font-size:11px;background:rgba(124,58,237,.3);padding:3px 8px;border-radius:4px;color:#c4b5fd}
+.result-text{font-size:17px;line-height:1.7;color:#f0f0ff;font-family:'DM Mono',monospace;font-style:italic;margin-bottom:20px}
+.result-actions{display:flex;gap:10px;margin-bottom:12px}
+.copy-btn{flex:1;background:rgba(124,58,237,.25);border:1px solid rgba(124,58,237,.4);border-radius:8px;color:#c4b5fd;padding:10px;font-weight:700;font-size:14px;transition:all .2s}
+.regen-btn{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#909090;padding:10px;font-weight:700;font-size:14px;transition:all .2s}
+.watermark{font-size:10px;color:#333350;text-align:right;font-family:'DM Mono',monospace}
+.copied-note{font-size:12px;color:#6b7280;margin-top:8px;text-align:center}
+.error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:16px;color:#fca5a5;font-size:14px;margin-bottom:20px}
+footer{text-align:center;color:#333350;font-size:11px;line-height:1.8}
+footer a{color:#555;text-decoration:none}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal{background:#0f0f1e;border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:32px;width:100%;max-width:520px;position:relative;animation:fadeUp .25s ease;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#555;font-size:20px}
+.modal-head{text-align:center;margin-bottom:28px}
+.modal-emoji{font-size:40px;display:block;margin-bottom:12px}
+.modal-title{font-size:24px;font-weight:800;margin-bottom:8px;color:#f0f0ff}
+.modal-sub{color:#707090;font-size:14px}
+.pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.pkg-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px 12px;text-align:center;position:relative;transition:all .2s}
+.pkg-card.popular{background:rgba(124,58,237,.15);border:1px solid #7c3aed}
+.pkg-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:.05em;white-space:nowrap}
+.pkg-emoji{font-size:28px;margin-bottom:8px}.pkg-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.pkg-credits{font-size:20px;font-weight:800;color:#a78bfa;margin-bottom:4px}
+.pkg-price{font-size:22px;font-weight:800;color:#f0f0ff;margin-bottom:2px}
+.pkg-note{font-size:11px;color:#555;margin-bottom:12px}
+.buy-btn{display:block;width:100%;padding:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#d0d0f0;text-decoration:none;font-weight:700;font-size:13px;transition:all .2s;text-align:center}
+.buy-btn.popular{background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.4)}
+.modal-guarantee{text-align:center;font-size:12px;color:#444460}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div><div class="bg-glow1"></div><div class="bg-glow2"></div>
+<div id="particles"></div>
+<div class="container">
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">💬</span>
+      <div><div class="logo-title">Excuse Machine™</div><div class="logo-sub">AI-powered excuses for every situation</div></div>
+    </div>
+    <div class="header-right">
+      <div class="credit-badge" id="credit-badge" style="display:none">⚡ <span id="credit-count">0</span> credits</div>
+      <button class="hist-btn" onclick="toggleHistory()">History</button>
+    </div>
+  </header>
+  <div class="history-panel" id="history-panel" style="display:none">
+    <div class="history-header"><span>Recent Excuses</span><button class="close-btn" onclick="toggleHistory()">✕</button></div>
+    <div id="history-list"><div class="hist-empty">No excuses yet!</div></div>
+  </div>
+  <div class="stat-row">
+    <div class="stat">10,000+ excuses generated</div>
+    <div class="stat">Works in 8 categories</div>
+    <div class="stat">3 free excuses daily</div>
+  </div>
+  <div class="section">
+    <div class="section-title">What do you need an excuse for?</div>
+    <div class="cat-grid">
+      <button class="cat-btn active" onclick="selectCat(this,'work')" data-cat="work"><span class="cat-emoji">💼</span><span class="cat-label">Work</span></button>
+      <button class="cat-btn" onclick="selectCat(this,'school')" data-cat="school"><span class="cat-emoji">📚</span><span class="cat-label">School</span></button>
+      <button class="cat-btn locked" onclick="selectCat(this,'relationship')" data-cat="relationship"><span class="lock-badge">🔒</span><span class="cat-emoji">💔</span><span class="cat-label">Relationship</span></button>
+      <button class="cat-btn locked" onclick="selectCat(this,'family')" data-cat="family"><span class="lock-badge">🔒</span><span class="cat-emoji">🏠</span><span class="cat-label">Family</span></button>
+      <button class="cat-btn locked" onclick="selectCat(this,'social')" data-cat="social"><span class="lock-badge">🔒</span><span class="cat-emoji">🎉</span><span class="cat-label">Social</span></button>
+      <button class="cat-btn locked" onclick="selectCat(this,'health')" data-cat="health"><span class="lock-badge">🔒</span><span class="cat-emoji">🏥</span><span class="cat-label">Health</span></button>
+      <button class="cat-btn locked" onclick="selectCat(this,'money')" data-cat="money"><span class="lock-badge">🔒</span><span class="cat-emoji">💸</span><span class="cat-label">Money</span></button>
+      <button class="cat-btn locked" onclick="selectCat(this,'creative')" data-cat="creative"><span class="lock-badge">🔒</span><span class="cat-emoji">🎲</span><span class="cat-label">Wild Card</span></button>
+    </div>
+    <div class="free-note" id="free-note">🆓 Work & School are free · Unlock all categories with credits</div>
+  </div>
+  <div class="section">
+    <div class="section-title">Urgency level</div>
+    <div class="urgency-row">
+      <button class="urg-btn active" onclick="selectUrgency(this,'mild')"><span class="urg-label">Mild</span><span class="urg-desc">Plausible & polite</span></button>
+      <button class="urg-btn" onclick="selectUrgency(this,'bold')"><span class="urg-label">Bold</span><span class="urg-desc">Dramatic but believable</span></button>
+      <button class="urg-btn" onclick="selectUrgency(this,'nuclear')"><span class="urg-label">☢️ Nuclear</span><span class="urg-desc">Pull out all the stops</span></button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Extra context <span class="optional">(optional — makes it more convincing)</span></div>
+    <textarea id="context" rows="2" placeholder="e.g. 'my boss is strict about tardiness' or 'I already cancelled twice'" maxlength="200"></textarea>
+  </div>
+  <div class="gen-section">
+    <div class="free-counter" id="free-counter" style="display:none"></div>
+    <button class="gen-btn" id="gen-btn" onclick="handleGenerate()">
+      <div class="gen-btn-inner" id="gen-btn-inner">⚡ Generate My Excuse</div>
+    </button>
+  </div>
+  <div class="error-box" id="error-box" style="display:none"></div>
+  <div class="result-section" id="result-section" style="display:none">
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-label">Your Excuse</span>
+        <span class="premium-tag" id="premium-tag" style="display:none">⚡ Premium</span>
+      </div>
+      <p class="result-text" id="result-text"></p>
+      <div class="result-actions">
+        <button class="copy-btn" onclick="handleCopy()">📋 Copy</button>
+        <button class="regen-btn" onclick="handleGenerate()">🔄 New Excuse</button>
+      </div>
+      <div class="copied-note" id="copied-note" style="display:none">Copied with watermark — remove it if you want</div>
+      <div class="watermark">ExcuseMachine™ · aivaultco.com</div>
+    </div>
+  </div>
+  <footer>
+    <div>ExcuseMachine™ · <a href="https://aivaultco.com">aivaultco.com</a></div>
+    <div style="margin-top:4px;opacity:.7">For entertainment purposes · Use responsibly</div>
+  </footer>
+</div>
 
-    <!-- SEO -->
-    <title>Excuse Machine™ — AI-Powered Excuses for Every Situation</title>
-    <meta name="description" content="Professional AI-generated excuses for work, school, relationships and more. Never be caught without a perfect excuse again. Free & Premium." />
-    <meta name="keywords" content="excuse generator, AI excuses, funny excuses, work excuses, school excuses, breakup excuses, excuse machine, ai excuse maker" />
+<!-- PAYWALL MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-head">
+      <span class="modal-emoji">💬</span>
+      <div class="modal-title">Get Premium Excuses</div>
+      <div class="modal-sub">Credits never expire · Unlock all 8 categories · AI-powered</div>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-emoji">⚡</div><div class="pkg-name">Starter</div>
+        <div class="pkg-credits">5 Credits</div><div class="pkg-price">$0.99</div>
+        <div class="pkg-note">20¢ per excuse</div>
+        <a href="https://buy.stripe.com/aFadRb8VSgAd97E2n8frW0b" target="_blank" class="buy-btn" onclick="closeModal()">Get Starter</a>
+      </div>
+      <div class="pkg-card popular">
+        <div class="pkg-badge">MOST POPULAR</div>
+        <div class="pkg-emoji">🔥</div><div class="pkg-name">Pro</div>
+        <div class="pkg-credits">20 Credits</div><div class="pkg-price">$2.99</div>
+        <div class="pkg-note">15¢ per excuse</div>
+        <a href="https://buy.stripe.com/14A7sN6NKes5cjQ7HsfrW0c" target="_blank" class="buy-btn popular" onclick="closeModal()">Get Pro</a>
+      </div>
+      <div class="pkg-card">
+        <div class="pkg-emoji">💎</div><div class="pkg-name">Mega</div>
+        <div class="pkg-credits">60 Credits</div><div class="pkg-price">$6.99</div>
+        <div class="pkg-note">12¢ per excuse</div>
+        <a href="https://buy.stripe.com/6oU8wRb40abP83AbXIfrW0d" target="_blank" class="buy-btn" onclick="closeModal()">Get Mega</a>
+      </div>
+    </div>
+    <p class="modal-guarantee">🔒 Secure payment via Stripe · Credits added instantly · 30-day refund guarantee</p>
+  </div>
+</div>
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="Excuse Machine™ — AI Excuses Instant" />
-    <meta property="og:description" content="AI-powered excuses for every situation. Free & Premium. Try it now." />
-    <meta property="og:url" content="https://aivaultco.com" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://aivaultco.com/og-image.png" />
+<script>
+const STORAGE_KEY='excuse_machine_v1';
+const FREE_CATS=['work','school'];
+const FREE_LIMIT=3;
+let state={credits:0,freeUsed:0,history:[],category:'work',urgency:'mild'};
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Excuse Machine™" />
-    <meta name="twitter:description" content="AI-powered excuses for every situation. Free & Premium." />
+function loadState(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');Object.assign(state,d);}catch{}}
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({credits:state.credits,freeUsed:state.freeUsed,history:state.history}));}catch{}}
 
-    <!-- Canonical -->
-    <link rel="canonical" href="https://aivaultco.com" />
+loadState();
+updateUI();
 
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>" />
+// Handle Stripe redirect
+const pkg=new URLSearchParams(window.location.search).get('pkg');
+if(pkg){const pkgs={starter:5,pro:20,mega:60};if(pkgs[pkg]){state.credits+=pkgs[pkg];saveState();window.history.replaceState({},'','/');triggerParticles();alert('✅ '+pkgs[pkg]+' credits added! You now have '+state.credits+' credits.');updateUI();}}
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+function updateUI(){
+  const badge=document.getElementById('credit-badge');
+  if(state.credits>0){badge.style.display='flex';document.getElementById('credit-count').textContent=state.credits;}
+  else{badge.style.display='none';}
+  document.getElementById('free-note').style.display=state.credits>0?'none':'block';
+  document.querySelectorAll('.cat-btn').forEach(btn=>{
+    const isFree=FREE_CATS.includes(btn.dataset.cat);
+    const lock=btn.querySelector('.lock-badge');
+    if(state.credits>0){btn.classList.remove('locked');if(lock)lock.style.display='none';}
+    else if(!isFree){btn.classList.add('locked');if(lock)lock.style.display='block';}
+  });
+  const fc=document.getElementById('free-counter');
+  if(FREE_CATS.includes(state.category)&&state.credits<=0){
+    const left=Math.max(0,FREE_LIMIT-state.freeUsed);
+    if(left>0){fc.textContent=left+' free excuse'+(left!==1?'s':'')+' remaining today';fc.style.display='block';}
+    else{fc.style.display='none';}
+  }else{fc.style.display='none';}
+  const canGen=FREE_CATS.includes(state.category)?(state.freeUsed<FREE_LIMIT||state.credits>0):state.credits>0;
+  const btn=document.getElementById('gen-btn');
+  const inner=document.getElementById('gen-btn-inner');
+  if(!btn.classList.contains('loading')){
+    btn.className='gen-btn'+(canGen?'':' locked');
+    inner.innerHTML=canGen?'⚡ Generate My Excuse':'🔒 Get Credits to Unlock';
+  }
+}
 
-    <style>
-      *, *::before, *::after { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; background: #080810; }
-    </style>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+function selectCat(el,cat){
+  if(el.classList.contains('locked')){openModal();return;}
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');state.category=cat;updateUI();
+}
+function selectUrgency(el,urg){
+  document.querySelectorAll('.urg-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');state.urgency=urg;
+}
+
+async function handleGenerate(){
+  const btn=document.getElementById('gen-btn');
+  if(btn.classList.contains('loading'))return;
+  const isFree=FREE_CATS.includes(state.category);
+  if(!isFree&&state.credits<=0){openModal();return;}
+  if(isFree&&state.freeUsed>=FREE_LIMIT&&state.credits<=0){openModal();return;}
+  const context=document.getElementById('context').value;
+  const inner=document.getElementById('gen-btn-inner');
+  const errBox=document.getElementById('error-box');
+  btn.classList.add('loading');
+  inner.innerHTML='<span class="spinner"></span>Crafting your excuse...';
+  errBox.style.display='none';
+  document.getElementById('result-section').style.display='none';
+  try{
+    const res=await fetch('/api/excuse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category:state.category,urgency:state.urgency,context,isPremium:state.credits>0})});
+    if(!res.ok)throw new Error('API error');
+    const data=await res.json();
+    const excuse=data.excuse||'Something went wrong. Even our excuse machine needs an excuse sometimes.';
+    if(state.credits>0)state.credits--;else state.freeUsed++;
+    const emojis={work:'💼',school:'📚',relationship:'💔',family:'🏠',social:'🎉',health:'🏥',money:'💸',creative:'🎲'};
+    state.history=[{id:Date.now(),category:emojis[state.category]+' '+state.category,urgency:state.urgency,text:excuse,ts:new Date().toLocaleTimeString()},...state.history].slice(0,20);
+    saveState();updateUI();showResult(excuse);
+  }catch{
+    errBox.textContent='The machine broke down. Even excuses need excuses. Try again!';
+    errBox.style.display='block';
+  }
+  btn.classList.remove('loading');
+  updateUI();
+}
+
+function showResult(excuse){
+  document.getElementById('result-text').textContent=excuse;
+  document.getElementById('premium-tag').style.display=state.credits>0?'inline':'none';
+  document.getElementById('result-section').style.display='block';
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function handleCopy(){
+  const text=document.getElementById('result-text').textContent;
+  navigator.clipboard?.writeText(text+'\n\n— Generated by ExcuseMachine™ at aivaultco.com');
+  const btn=document.querySelector('.copy-btn');
+  const note=document.getElementById('copied-note');
+  btn.textContent='✓ Copied!';note.style.display='block';
+  setTimeout(()=>{btn.textContent='📋 Copy';note.style.display='none';},2000);
+}
+
+function toggleHistory(){
+  const panel=document.getElementById('history-panel');
+  const list=document.getElementById('history-list');
+  if(panel.style.display==='none'){
+    list.innerHTML=state.history.length===0?'<div class="hist-empty">No excuses yet. Generate your first one!</div>':state.history.map(h=>`<div class="hist-item"><div class="hist-meta">${h.category} · ${h.urgency} · ${h.ts}</div><div class="hist-text">${h.text}</div></div>`).join('');
+    panel.style.display='block';
+  }else{panel.style.display='none';}
+}
+
+function openModal(){document.getElementById('modal').style.display='flex';}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+function triggerParticles(){
+  const container=document.getElementById('particles');
+  const emojis=['💰','✨','🎉','⚡','💎'];
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');el.className='particle';
+    el.textContent=emojis[Math.floor(Math.random()*5)];
+    el.style.left=(40+Math.random()*20)+'%';el.style.top=(40+Math.random()*20)+'%';
+    el.style.setProperty('--dx',((Math.random()-.5)*200)+'px');
+    el.style.setProperty('--dy',((Math.random()-.5)*200)+'px');
+    container.appendChild(el);setTimeout(()=>el.remove(),1200);
+  }
+}
+</script>
+</body>
 </html>
